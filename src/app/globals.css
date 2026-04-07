@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #0f1628;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --text-primary: #f0f4ff;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-subtle: rgba(59, 130, 246, 0.15);
+  }
+
+  body {
+    @apply bg-[#0a0e1a] text-slate-200 antialiased selection:bg-blue-500/30 font-sans;
+    min-height: 100vh;
+    /* Note: overflow-x:hidden removed — it blocks horizontal scrollbars in child elements */
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-black/20;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-blue-500/20 rounded-full hover:bg-blue-500/40 transition-colors;
+  }
+}
+
+@layer components {
+
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-[#0f1628]/70 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Adaptive Card for Home Page */
+  .adaptive-card {
+    @apply rounded-2xl transition-all duration-300 border border-white/5 shadow-xl;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .adaptive-card:hover {
+    @apply -translate-y-1.5 shadow-2xl border-blue-500/30 bg-white/[0.02];
+  }
+
+  /* Light Zone overrides (applied to the half-white section) */
+  .light-zone {
+    @apply text-slate-900;
+  }
+
+  .light-zone .adaptive-card {
+    @apply bg-white border-slate-100 shadow-sm shadow-slate-200/50;
+  }
+
+  .light-zone .adaptive-card:hover {
+    @apply shadow-xl shadow-slate-200 bg-white border-blue-500/20;
+  }
+
+  .light-zone h2,
+  .light-zone h3 {
+    @apply text-slate-900;
+  }
+
+  .light-zone p {
+    @apply text-slate-500;
+  }
+}
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Horizontal scroll container */
+  .scrollable-x {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+}
