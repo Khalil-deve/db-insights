@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 import {
     Database, Eye, EyeOff, Mail, Lock, User, ArrowRight,
     Chrome, Github, CheckCircle2, Zap,
@@ -19,6 +20,9 @@ const PERKS = [
 // ─── Inner component (needs useSearchParams) ──────────────────────────────────
 function AuthForm() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const { signUp, signIn } = useAuth();
+    
     const [tab, setTab] = useState<'signin' | 'signup'>(
         searchParams.get('tab') === 'signup' ? 'signup' : 'signin',
     );
@@ -26,6 +30,7 @@ function AuthForm() {
     const [showPass, setShowPass] = useState(false);
     const [showPass2, setShowPass2] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState({
         name: '', email: '', password: '', confirm: '',
     });
@@ -42,10 +47,40 @@ function AuthForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
         setLoading(true);
-        // Placeholder — wire up your auth backend here
-        await new Promise(r => setTimeout(r, 1200));
-        setLoading(false);
+
+        try {
+            if (tab === 'signup') {
+                // Validate password match
+                if (form.password !== form.confirm) {
+                    setError('Passwords do not match');
+                    setLoading(false);
+                    return;
+                }
+                
+                // Validate password length
+                if (form.password.length < 8) {
+                    setError('Password must be at least 8 characters');
+                    setLoading(false);
+                    return;
+                }
+
+                await signUp(form.email, form.password, form.name);
+                setError(null);
+                // Redirect to query interface after successful signup
+                router.push('/');
+            } else {
+                await signIn(form.email, form.password);
+                setError(null);
+                // Redirect to query interface after successful signin
+                router.push('/');
+            }
+        } catch (err: any) {
+            setError(err.message || 'An error occurred. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -86,6 +121,13 @@ function AuthForm() {
                     <span className="text-[12px] text-slate-600 font-medium">or continue with email</span>
                     <div className="flex-1 h-px bg-white/10" />
                 </div>
+
+                {/* Error message */}
+                {error && (
+                    <div className="w-full max-w-sm mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[13px]">
+                        {error}
+                    </div>
+                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-sm">
