@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🔍 DB Insights</h1>
+  <h1>DB Insights</h1>
   <p><strong>Transform plain English into actionable database queries instantly.</strong></p>
   <p>
     <a href="#features">Features</a> •

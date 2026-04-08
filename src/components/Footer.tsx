@@ -42,7 +42,7 @@ const FEATURE_LINKS = [
 const SOCIAL_LINKS = [
     {
         label: 'GitHub',
-        href: 'https://github.com/',
+        href: 'https://github.com/Khalil-deve',
         icon: <Github size={18} />,
         hoverColor: 'hover:text-white hover:bg-white/10',
     },
@@ -54,13 +54,13 @@ const SOCIAL_LINKS = [
     },
     {
         label: 'LinkedIn',
-        href: 'https://linkedin.com/',
+        href: 'https://linkedin.com/khalil-dev',
         icon: <Linkedin size={18} />,
         hoverColor: 'hover:text-blue-400 hover:bg-blue-400/10',
     },
     {
         label: 'Email',
-        href: 'mailto:contact@dbinsights.dev',
+        href: 'mailto:muhammadkhalil.web@gmail.com',
         icon: <Mail size={18} />,
         hoverColor: 'hover:text-emerald-400 hover:bg-emerald-400/10',
     },
@@ -197,7 +197,7 @@ export function Footer() {
                         <Heart size={11} className="text-rose-500 fill-rose-500" />
                         by{' '}
                         <a
-                            href="https://github.com/"
+                            href="https://github.com/Khalil-deve"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-slate-400 hover:text-white transition-colors duration-150 flex items-center gap-0.5"
@@ -210,7 +210,7 @@ export function Footer() {
 
                     <div className="flex items-center gap-4 text-[12px] text-slate-600">
                         <a
-                            href="https://github.com/"
+                            href="https://github.com/Khalil-deve/db-insights"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1.5 hover:text-slate-300 transition-colors duration-150"
