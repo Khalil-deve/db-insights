@@ -53,15 +53,6 @@ export function Navbar() {
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-3 group shrink-0"
                     >
-                        <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-white/10 bg-[#050810] flex items-center justify-center p-1.5 shadow-inner transition-transform group-hover:scale-105">
-                            <Image
-                                src={logo}
-                                alt="logo"
-                                width={40}
-                                height={40}
-                                className="w-full h-full object-contain transition-all duration-300 group-hover:brightness-125"
-                            />
-                        </div>
                         <span className="text-[17px] font-black tracking-tight text-white leading-none">
                             DB<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500"> Insights</span>
                         </span>
@@ -73,7 +64,7 @@ export function Navbar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="px-4 py-2 rounded-lg text-[14px] font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+                                className="px-4 py-2 rounded-lg text-[14px] font-medium text-slate-400 hover:text-white hover:bg-emerald-500/50 transition-all duration-200"
                             >
                                 {link.label}
                             </Link>

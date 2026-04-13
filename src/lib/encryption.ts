@@ -8,6 +8,7 @@
 const SECRET_SALT = 'db-insights-v1-secure-salt';
 
 export function encryptState(data: any): string {
+    if (typeof window === 'undefined') return '';
     const json = JSON.stringify(data);
     // Convert to base64 with a simple XOR-like obfuscation
     const encoded = btoa(
@@ -19,6 +20,7 @@ export function encryptState(data: any): string {
 }
 
 export function decryptState(encoded: string): any {
+    if (typeof window === 'undefined' || !encoded) return null;
     try {
         const decoded = atob(encoded);
         const json = decoded.split('').map((char, i) => 

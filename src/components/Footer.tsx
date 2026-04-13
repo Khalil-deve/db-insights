@@ -90,13 +90,6 @@ export function Footer() {
                     {/* ── Brand column ── */}
                     <div className="col-span-1 sm:col-span-2 lg:col-span-1 flex flex-col gap-5">
                         <Link href="/" className="flex items-center gap-2.5 group w-fit">
-                            <Image
-                                src={logo}
-                                alt="DB Insights logo"
-                                width={40}
-                                height={40}
-                                className="w-10 h-10 object-contain"
-                            />
                             <span className="text-[15px] font-black tracking-tight text-white leading-none">
                                 DB<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500"> Insights</span>
                             </span>

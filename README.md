@@ -1,19 +1,29 @@
 <div align="center">
   <img src="./public/logo.png" alt="DB Insights Logo" width="120" />
-  
-  # DB Insights
-  
+
+# DB Insights
+
   **The Intelligent Bridge Between Natural Language and Your Database.**
-  
+
   [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
   [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
   [![Lucide Icons](https://img.shields.io/badge/Lucide_Icons-Latest-FF00AD?style=for-the-badge&logo=lucide)](https://lucide.dev/)
 
-  <img src="./public/dashboard.png" alt="DB Insights Dashboard" width="100%" style="border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1);" />
-  
-  <p><strong>Transform plain English into actionable SQL queries instantly.</strong></p>
+<img src="./public/dashboard.png" alt="DB Insights Dashboard" width="100%" style="border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1);" />
+
+<p><strong>Transform plain English into actionable SQL queries instantly.</strong></p>
   <p>Query, visualize, and analyze your data via <strong>zero-telemetry</strong> infrastructure powered by local AI.</p>
+  <h1>DB Insights</h1>
+  <p><strong>Transform plain English into actionable database queries instantly.</strong></p>
+  <p>
+    <a href="#features">Features</a> •
+    <a href="#architecture">Architecture</a> •
+    <a href="#quick-start">Quick Start</a> •
+    <a href="#cli">CLI Options</a> •
+    <a href="#contributing">Contributing</a>
+  </p>
+
 </div>
 
 ---
@@ -31,22 +41,29 @@ Designed for the modern developer, DB Insights features a high-performance, full
 ## ✨ Core Capabilities
 
 ### 🧠 AI-Native SQL Synthesis
+
 Say goodbye to complex syntax. Employs context-aware prompt parsing to generate precise `SELECT` statements from natural language. Optimized for **Ollama** and **Qwen2.5-Coder**.
 
 ### 🗄️ Universal Multi-Engine Connectivity
+
 Connect directly to your active environments with support for:
+
 - 🐬 **MySQL**
 - 🐘 **PostgreSQL**
 - 🍃 **MongoDB** (Pipeline enabled)
 
 ### 📊 Advanced Data Storytelling
+
 Visualize your query results with high-fidelity components:
+
 - **Interactive Tables**: High-density data views with horizontal scrolling.
 - **Dynamic Charts**: Instant Bar, Line, and Pie visualizations via Recharts.
 - **Tree-View JSON**: Explorable structural data for deep debugging.
 
 ### 🛡️ Zero-Trust Security Model
+
 Safety is non-negotiable.
+
 - **Read-Only Enforcement**: Strict pattern matching blocks `DROP`, `DELETE`, `UPDATE`, and `ALTER`.
 - **Local-First Data Plane**: 100% of execution and AI inference stays on your infrastructure.
 - **Resource Constraints**: Server-side row caps and statement timeouts prevent engine overload.
@@ -85,23 +102,25 @@ DB Insights operates on a decoupled architecture, orchestrating AI generation an
 ## 🚀 Getting Started
 
 ### 1. Prerequisites
+
 * **Node.js**: 20.x or higher
 * **Local LLM**: [Ollama](https://ollama.ai/) running with `qwen2.5-coder:7b` (recommended)
 
 ### 2. Installation
 
 1. **Clone the Repo**
+
    ```bash
    git clone https://github.com/your-username/db-insights.git
    cd db-insights
    ```
-
 2. **Setup Dependencies**
+
    ```bash
    npm install
    ```
-
 3. **Fire it up**
+
    ```bash
    npm run dev
    ```

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DatabaseConfig, SchemaInfo, HistoryEntry } from '@/types';
 
 // ── Page-level components ──────────────────────
@@ -37,9 +37,8 @@ export default function HomePage() {
   const [demoLoading, setDemoLoading] = useState(false);
 
   /* ── Persistence ───────────────────────────── */
-  // Load on mount
-  useState(() => {
-    if (typeof window === 'undefined') return;
+  // Load session from localStorage on mount
+  useEffect(() => {
     try {
       const savedEncState = localStorage.getItem('db_insights_state');
       const savedEncHistory = localStorage.getItem('db_insights_history_enc');
@@ -58,9 +57,9 @@ export default function HomePage() {
         if (h) setHistory(h);
       }
     } catch (e) {
-      console.error('Failed to load session:', e);
+      console.error('Failed to restore session:', e);
     }
-  });
+  }, []);
 
   /* ── Handlers ──────────────────────────────── */
   const handleConnect = (config: DatabaseConfig, schemaData: unknown) => {
@@ -152,11 +151,11 @@ export default function HomePage() {
         </div>
 
         {/* ③ How it Works & Features (Light Zone) */}
-        <div className="relative z-10 mt-12 bg-dark-400 ">
+        <div id="how-it-works" className="relative z-10 mt-12 bg-dark-400 ">
           <div className="border-t border-slate-100">
             <HowItWorks />
           </div>
-          <div className="border-t border-slate-100">
+          <div id="features" className="border-t border-slate-100">
             <FeatureCards />
           </div>
         </div>
