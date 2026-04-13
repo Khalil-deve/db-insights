@@ -16,6 +16,7 @@ import { QuerySidebar } from '@/components/QuerySidebar';
 import { QueryTopBar } from '@/components/QueryTopBar';
 import { QueryInterface } from '@/components/QueryInterface';
 import { ArrowRight } from 'lucide-react';
+import { encryptState, decryptState } from '@/lib/encryption';
 
 // ─────────────────────────────────────────────────────────
 type AppScreen = 'connect' | 'query';
@@ -35,12 +36,46 @@ export default function HomePage() {
   const [showHelp, setShowHelp] = useState(false);
   const [demoLoading, setDemoLoading] = useState(false);
 
+  /* ── Persistence ───────────────────────────── */
+  // Load on mount
+  useState(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedEncState = localStorage.getItem('db_insights_state');
+      const savedEncHistory = localStorage.getItem('db_insights_history_enc');
+
+      if (savedEncState) {
+        const state = decryptState(savedEncState);
+        if (state) {
+          setSchema(state.schema);
+          setDbConfig(state.dbConfig);
+          setIsDemo(state.isDemo);
+          setScreen('query');
+        }
+      }
+      if (savedEncHistory) {
+        const h = decryptState(savedEncHistory);
+        if (h) setHistory(h);
+      }
+    } catch (e) {
+      console.error('Failed to load session:', e);
+    }
+  });
+
   /* ── Handlers ──────────────────────────────── */
   const handleConnect = (config: DatabaseConfig, schemaData: unknown) => {
+    const s = schemaData as SchemaInfo;
     setDbConfig(config);
-    setSchema(schemaData as SchemaInfo);
+    setSchema(s);
     setIsDemo(false);
     setScreen('query');
+    
+    // Persist Encrypted
+    localStorage.setItem('db_insights_state', encryptState({
+        schema: s,
+        dbConfig: config,
+        isDemo: false
+    }));
   };
 
   const handleDemoMode = async () => {
@@ -53,6 +88,13 @@ export default function HomePage() {
         setDbConfig(null);
         setIsDemo(true);
         setScreen('query');
+
+        // Persist Encrypted
+        localStorage.setItem('db_insights_state', encryptState({
+            schema: data.schema,
+            dbConfig: null,
+            isDemo: true
+        }));
       }
     } finally {
       setDemoLoading(false);
@@ -62,17 +104,23 @@ export default function HomePage() {
   const handleSaveHistory = useCallback((entry: {
     question: string; query: string; rowCount: number; success: boolean;
   }) => {
-    setHistory(prev => [{
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      timestamp: new Date(),
-      ...entry,
-    }, ...prev.slice(0, 49)]);
+    setHistory(prev => {
+      const newHistory = [{
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        timestamp: new Date(),
+        ...entry,
+      }, ...prev.slice(0, 49)];
+      localStorage.setItem('db_insights_history_enc', encryptState(newHistory));
+      return newHistory;
+    });
   }, []);
 
   const handleBack = () => {
     setScreen('connect');
     setSchema(null);
     setDbConfig(null);
+    localStorage.removeItem('db_insights_state');
+    localStorage.removeItem('db_insights_history_enc');
   };
 
   /* ════════════════════════════════════════════
@@ -123,7 +171,7 @@ export default function HomePage() {
      QUERY SCREEN
   ════════════════════════════════════════════ */
   return (
-    <div className="flex min-h-screen relative z-10">
+    <div className="flex min-h-screen relative z-10 overflow-hidden w-full">
 
       {/* ① Collapsible sidebar */}
       <QuerySidebar
@@ -133,16 +181,19 @@ export default function HomePage() {
         sidePanel={sidePanel}
         history={history}
         onPanelChange={setSidePanel}
-        onBack={handleBack}
         onClose={() => setSidebarOpen(false)}
         onHistorySelect={entry => setCurrentQuestion(entry.question)}
         onHistoryClear={() => setHistory([])}
         onSampleQuestion={setCurrentQuestion}
       />
 
-      {/* ② Main content area */}
-      <main className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${sidebarOpen ? 'sm:ml-[280px]' : 'sm:ml-0'
-        }`}>
+      {/* ② Main content area — must NOT overflow horizontally */}
+      <main
+        className={`flex-1 flex flex-col min-h-screen overflow-hidden transition-all duration-300 ${
+          sidebarOpen ? 'sm:ml-[280px]' : 'sm:ml-0'
+        }`}
+        style={{ width: 0, minWidth: 0 }}
+      >
         {/* ③ Sticky top bar + help overlay */}
         <QueryTopBar
           schema={schema}
@@ -151,10 +202,12 @@ export default function HomePage() {
           showHelp={showHelp}
           onToggleSidebar={() => setSidebarOpen(o => !o)}
           onToggleHelp={() => setShowHelp(h => !h)}
+          onBack={handleBack}
         />
 
-        {/* ④ Query interface */}
-        <div className="flex-1 px-4 sm:px-8 py-6 max-w-4xl w-full mx-auto pb-24 sm:pb-6">
+        {/* ④ Query interface — full width, content constrained */}
+        <div className="flex-1 w-full overflow-hidden">
+          <div className="px-3 sm:px-6 py-4 sm:py-6 w-full max-w-7xl mx-auto pb-24 sm:pb-8">
           {schema && (
             <QueryInterface
               schema={schema}
@@ -169,6 +222,7 @@ export default function HomePage() {
               key={`${isDemo}-${schema.databaseName}-${currentQuestion}`}
             />
           )}
+          </div>
         </div>
       </main>
     </div>

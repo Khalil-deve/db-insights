@@ -1,0 +1,35 @@
+0 verbose cli D:\Programs\nodejs\node.exe D:\Programs\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.8.2
+2 info using node@v20.20.0
+3 silly config load:file:D:\Programs\nvm\v20.20.0\node_modules\npm\npmrc
+4 silly config load:file:d:\Dev\db-insights\.npmrc
+5 silly config load:file:C:\Users\Muhammad Khalil\.npmrc
+6 silly config load:file:D:\Programs\nodejs\etc\npmrc
+7 verbose title npm view react-dom description dist-tags.latest homepage version time
+8 verbose argv "view" "--json" "--" "react-dom" "description" "dist-tags.latest" "homepage" "version" "time"
+9 verbose logfile logs-max:10 dir:D:\Dev\db-insights\npm-cache\_logs\2026-04-13T18_10_37_263Z-
+10 verbose logfile D:\Dev\db-insights\npm-cache\_logs\2026-04-13T18_10_37_263Z-debug-0.log
+11 silly logfile done cleaning log files
+12 http fetch GET 200 https://registry.npmjs.org/react-dom 6805ms (cache miss)
+13 verbose type system
+14 verbose stack FetchError: Invalid response body while trying to fetch https://registry.npmjs.org/react-dom: EBUSY: resource busy or locked, unlink 'D:\Dev\db-insights\npm-cache\_cacache\tmp\45e0bf4d'
+14 verbose stack     at D:\Programs\nvm\v20.20.0\node_modules\npm\node_modules\minipass-fetch\lib\body.js:170:15
+14 verbose stack     at async Response.json (D:\Programs\nvm\v20.20.0\node_modules\npm\node_modules\minipass-fetch\lib\body.js:75:17)
+14 verbose stack     at async RegistryFetcher.packument (D:\Programs\nvm\v20.20.0\node_modules\npm\node_modules\pacote\lib\registry.js:98:25)
+14 verbose stack     at async #getData (D:\Programs\nvm\v20.20.0\node_modules\npm\lib\commands\view.js:135:20)
+14 verbose stack     at async #viewPackage (D:\Programs\nvm\v20.20.0\node_modules\npm\lib\commands\view.js:112:28)
+14 verbose stack     at async View.exec (D:\Programs\nvm\v20.20.0\node_modules\npm\lib\commands\view.js:70:5)
+14 verbose stack     at async Npm.exec (D:\Programs\nvm\v20.20.0\node_modules\npm\lib\npm.js:207:9)
+14 verbose stack     at async module.exports (D:\Programs\nvm\v20.20.0\node_modules\npm\lib\cli\entry.js:74:5)
+15 error code EBUSY
+16 error syscall unlink
+17 error path D:\Dev\db-insights\npm-cache\_cacache\tmp\45e0bf4d
+18 error errno EBUSY
+19 error Invalid response body while trying to fetch https://registry.npmjs.org/react-dom: EBUSY: resource busy or locked, unlink 'D:\Dev\db-insights\npm-cache\_cacache\tmp\45e0bf4d'
+20 verbose cwd d:\Dev\db-insights
+21 verbose os Windows_NT 10.0.19045
+22 verbose node v20.20.0
+23 verbose npm  v10.8.2
+24 verbose exit 1
+25 verbose code 1
+26 error A complete log of this run can be found in: D:\Dev\db-insights\npm-cache\_logs\2026-04-13T18_10_37_263Z-debug-0.log

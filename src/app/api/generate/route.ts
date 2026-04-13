@@ -61,8 +61,7 @@ function extractJSON(text: string): string {
 }
 
 // ─── Env-var resolution ──────────────────────────────────────────────────────
-// Reads from .env.local so the user only needs to edit that file.
-type Provider = 'groq' | 'gemini' | 'openrouter';
+type Provider = 'groq' | 'gemini' | 'openrouter' | 'ollama';
 
 function resolveProvider(clientProvider?: string): Provider {
     return (clientProvider || process.env.LLM_PROVIDER || 'groq') as Provider;
@@ -70,12 +69,13 @@ function resolveProvider(clientProvider?: string): Provider {
 
 function resolveApiKey(provider: Provider, clientKey?: string): string {
     if (clientKey) return clientKey;
-    const map: Record<Provider, string | undefined> = {
+    if (provider === 'ollama') return 'n/a';
+    const map: Record<Exclude<Provider, 'ollama'>, string | undefined> = {
         groq: process.env.GROQ_API_KEY,
         gemini: process.env.GEMINI_API_KEY,
         openrouter: process.env.OPENROUTER_API_KEY,
     };
-    return map[provider] || '';
+    return map[provider as Exclude<Provider, 'ollama'>] || '';
 }
 
 function resolveModel(provider: Provider, clientModel?: string): string {
@@ -84,6 +84,7 @@ function resolveModel(provider: Provider, clientModel?: string): string {
         groq: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
         gemini: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
         openrouter: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free',
+        ollama: process.env.OLLAMA_MODEL || 'llama3',
     };
     return map[provider];
 }
@@ -143,6 +144,49 @@ async function callGemini(systemPrompt: string, userPrompt: string, apiKey: stri
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
+// ─── Provider: Ollama ───────────────────────────────────────────────────────
+async function callOllama(systemPrompt: string, userPrompt: string, model: string): Promise<string> {
+    const baseUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+    const res = await fetch(`${baseUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model,
+            system: systemPrompt,
+            prompt: userPrompt,
+            stream: false,
+            options: { temperature: 0.1 },
+        }),
+        signal: AbortSignal.timeout(60000),
+    });
+
+    if (!res.ok) throw new Error(`Ollama error: ${res.status}`);
+    const data = await res.json();
+    return data.response || '';
+}
+
+async function tryProvider(provider: Provider, systemPrompt: string, userPrompt: string, model?: string, apiKey?: string): Promise<string> {
+    const activeProvider = provider;
+    const resolvedKey = resolveApiKey(activeProvider, apiKey);
+    const resolvedModel = resolveModel(activeProvider, model);
+
+    switch (activeProvider) {
+        case 'groq':
+            if (!resolvedKey) throw new Error('Groq key missing');
+            return callOpenAICompatible(systemPrompt, userPrompt, resolvedKey, resolvedModel, 'https://api.groq.com/openai/v1');
+        case 'openrouter':
+            if (!resolvedKey) throw new Error('OpenRouter key missing');
+            return callOpenAICompatible(systemPrompt, userPrompt, resolvedKey, resolvedModel, 'https://openrouter.ai/api/v1');
+        case 'gemini':
+            if (!resolvedKey) throw new Error('Gemini key missing');
+            return callGemini(systemPrompt, userPrompt, resolvedKey, resolvedModel);
+        case 'ollama':
+            return callOllama(systemPrompt, userPrompt, resolvedModel);
+        default:
+            throw new Error(`Unknown provider: ${activeProvider}`);
+    }
+}
+
 // ─── Main Route Handler ──────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
     try {
@@ -158,31 +202,29 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Question and schema are required' }, { status: 400 });
         }
 
-        // Resolve from: client args → .env.local → built-in defaults
-        const activeProvider = resolveProvider(provider);
-        const resolvedKey = resolveApiKey(activeProvider, apiKey);
-        const resolvedModel = resolveModel(activeProvider, model);
-
         const systemPrompt = buildSystemPrompt(schema);
         const userPrompt = buildUserPrompt(question, schema);
 
         let rawResponse = '';
+        let lastError = '';
 
-        switch (activeProvider) {
-            case 'groq':
-                if (!resolvedKey) throw new Error('Groq API key missing. Add GROQ_API_KEY to .env.local.');
-                rawResponse = await callOpenAICompatible(systemPrompt, userPrompt, resolvedKey, resolvedModel, 'https://api.groq.com/openai/v1');
-                break;
-            case 'openrouter':
-                if (!resolvedKey) throw new Error('OpenRouter API key missing. Add OPENROUTER_API_KEY to .env.local.');
-                rawResponse = await callOpenAICompatible(systemPrompt, userPrompt, resolvedKey, resolvedModel, 'https://openrouter.ai/api/v1');
-                break;
-            case 'gemini':
-                if (!resolvedKey) throw new Error('Gemini API key missing. Add GEMINI_API_KEY to .env.local.');
-                rawResponse = await callGemini(systemPrompt, userPrompt, resolvedKey, resolvedModel);
-                break;
-            default:
-                throw new Error(`Unknown provider: ${activeProvider}`);
+        // FALLBACK CHAIN
+        const providers: Provider[] = [provider || resolveProvider(), 'groq', 'gemini', 'ollama'];
+        const uniqueProviders = [...new Set(providers)];
+
+        for (const p of uniqueProviders) {
+            try {
+                rawResponse = await tryProvider(p, systemPrompt, userPrompt, model, apiKey);
+                if (rawResponse) break;
+            } catch (err: any) {
+                lastError = err.message;
+                console.warn(`[Generate] Provider ${p} failed: ${lastError}`);
+                continue;
+            }
+        }
+
+        if (!rawResponse) {
+            throw new Error(`All AI providers failed. Last error: ${lastError}`);
         }
 
         // Parse JSON from LLM response

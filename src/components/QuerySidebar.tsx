@@ -4,15 +4,15 @@ import React from 'react';
 import { SchemaInfo, HistoryEntry } from '@/types';
 import { SchemaViewer } from '@/components/SchemaViewer';
 import { QueryHistory } from '@/components/QueryHistory';
-import { Database, ChevronLeft, LayoutDashboard, History, BookOpen } from 'lucide-react';
+import { Database, ChevronLeft, LayoutDashboard, History, BookOpen, Trophy, Package, BarChart3, Globe } from 'lucide-react';
 
 type SidePanel = 'schema' | 'history';
 
 const SAMPLE_QUESTIONS = [
-    '🏆 Show top 10 customers by total revenue',
-    '📦 What are the best selling products?',
-    '📊 Count orders grouped by status',
-    '🌍 Revenue breakdown by country',
+    { icon: <Trophy size={12} className="text-amber-400" />, text: 'Show top 10 customers by total revenue' },
+    { icon: <Package size={12} className="text-blue-400" />, text: 'What are the best selling products?' },
+    { icon: <BarChart3 size={12} className="text-purple-400" />, text: 'Count orders grouped by status' },
+    { icon: <Globe size={12} className="text-emerald-400" />, text: 'Revenue breakdown by country' },
 ];
 
 interface QuerySidebarProps {
@@ -22,7 +22,6 @@ interface QuerySidebarProps {
     sidePanel: SidePanel;
     history: HistoryEntry[];
     onPanelChange: (panel: SidePanel) => void;
-    onBack: () => void;        // navigates back to the connect/home screen (desktop only)
     onClose: () => void;       // just closes the drawer without navigating away
     onHistorySelect: (entry: HistoryEntry) => void;
     onHistoryClear: () => void;
@@ -36,7 +35,6 @@ export function QuerySidebar({
     sidePanel,
     history,
     onPanelChange,
-    onBack,
     onClose,
     onHistorySelect,
     onHistoryClear,
@@ -132,11 +130,12 @@ export function QuerySidebar({
                         <div className="grid grid-cols-2 gap-2">
                             {SAMPLE_QUESTIONS.map(q => (
                                 <button
-                                    key={q}
-                                    onClick={() => { onSampleQuestion(q.replace(/^[\S]+\s/, '')); onBack(); }}
-                                    className="p-2.5 text-left text-[11px] font-medium text-slate-400 bg-white/5 border border-white/5 rounded-xl transition-all duration-200 hover:bg-blue-500/10 hover:border-blue-500/20 hover:text-blue-400 active:scale-[0.97]"
+                                    key={q.text}
+                                    onClick={() => { onSampleQuestion(q.text); onClose(); }}
+                                    className="p-2.5 text-left text-[11px] font-medium text-slate-400 bg-white/5 border border-white/5 rounded-xl transition-all duration-200 hover:bg-blue-500/10 hover:border-blue-500/20 hover:text-blue-400 active:scale-[0.97] flex items-center gap-2"
                                 >
-                                    {q}
+                                    <span className="shrink-0">{q.icon}</span>
+                                    <span className="truncate">{q.text}</span>
                                 </button>
                             ))}
                         </div>
@@ -164,8 +163,8 @@ export function QuerySidebar({
                             </div>
                         </div>
                         <button
-                            onClick={onBack}
-                            title="Back to connect"
+                            onClick={onClose}
+                            title="Close sidebar"
                             className="p-1.5 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-all active:scale-90"
                         >
                             <ChevronLeft size={16} />
@@ -217,11 +216,12 @@ export function QuerySidebar({
                             <div className="flex flex-col gap-2">
                                 {SAMPLE_QUESTIONS.map(q => (
                                     <button
-                                        key={q}
-                                        onClick={() => onSampleQuestion(q.replace(/^[\S]+\s/, ''))}
-                                        className="p-2.5 text-left text-[11px] font-medium text-slate-400 bg-white/5 border border-white/5 rounded-xl transition-all duration-200 hover:bg-blue-500/10 hover:border-blue-500/20 hover:text-blue-400 hover:-translate-y-0.5 active:translate-y-0"
+                                        key={q.text}
+                                        onClick={() => onSampleQuestion(q.text)}
+                                        className="p-2.5 text-left text-[11px] font-medium text-slate-400 bg-white/5 border border-white/5 rounded-xl transition-all duration-200 hover:bg-blue-500/10 hover:border-blue-500/20 hover:text-blue-400 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2"
                                     >
-                                        {q}
+                                        <span className="shrink-0">{q.icon}</span>
+                                        <span className="truncate">{q.text}</span>
                                     </button>
                                 ))}
                             </div>

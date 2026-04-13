@@ -7,6 +7,7 @@ import {
     LineChart, Line, PieChart, Pie, Cell, Legend,
 } from 'recharts';
 import { QueryResult } from '@/types';
+import { useEffect } from 'react';
 import { CHART_COLORS, detectNumericColumns, detectLabelColumn } from './chartUtils';
 
 type ChartType = 'bar' | 'line' | 'pie';
@@ -45,13 +46,13 @@ function ChartTooltip({
 // ─── Empty state ───────────────────────────────────────────────────────────────
 function NoChartData() {
     return (
-        <div className="flex flex-col items-center justify-center py-20 px-10 text-center">
-            <BarChart3 size={40} className="text-slate-700 mb-4 opacity-30" />
-            <div className="text-sm font-bold text-slate-400 mb-2 uppercase tracking-widest">
+        <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+            <BarChart3 size={36} className="text-slate-700 mb-3 opacity-30" />
+            <div className="text-sm font-bold text-slate-400 mb-1 uppercase tracking-widest">
                 No visualisable data
             </div>
             <div className="text-xs text-slate-600 max-w-[240px]">
-                This result set doesn't contain numeric columns suitable for charting.
+                This result set doesn&apos;t contain numeric columns suitable for charting.
             </div>
         </div>
     );
@@ -63,51 +64,88 @@ const AXIS_PROPS = { axisLine: false, tickLine: false, tick: AXIS_TICK } as cons
 
 // ─── Main component ────────────────────────────────────────────────────────────
 export function ChartView({ result }: ChartViewProps) {
-    const numericCols = detectNumericColumns(result);
-    const labelCol = detectLabelColumn(result, numericCols);
+    const [isMounted, setIsMounted] = useState(false);
+    
+    useEffect(() => {
+        setIsMounted(true);
+        // Force a resize event to ensure Recharts calculates dimensions correctly
+        const timer = setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+        }, 100);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const numericCols = useMemo(() => detectNumericColumns(result), [result]);
+    const labelCol = useMemo(() => detectLabelColumn(result, numericCols), [result, numericCols]);
 
     const [chartType, setChartType] = useState<ChartType>('bar');
-    const [metric, setMetric] = useState(numericCols[0] || '');
+    const [metric, setMetric] = useState('');
 
-    const chartData = useMemo(() =>
-        result.rows.slice(0, 20).map((row, i) => ({
-            name: labelCol ? String(row[labelCol]).slice(0, 20) : `Row ${i + 1}`,
-            value: Number(row[metric]) || 0,
-            ...Object.fromEntries(numericCols.map(c => [c, Number(row[c]) || 0])),
-        })),
-        [result.rows, labelCol, metric, numericCols],
-    );
+    // Sync metric when numeric columns change
+    useEffect(() => {
+        if (numericCols.length > 0 && (!metric || !numericCols.includes(metric))) {
+            setMetric(numericCols[0]);
+        }
+    }, [numericCols, metric]);
 
+    const chartData = useMemo(() => {
+        if (!metric && numericCols.length > 0) return [];
+        
+        return result.rows.slice(0, 20).map((row, i) => {
+            const rawLabel = labelCol ? row[labelCol] : null;
+            const name = rawLabel !== null && rawLabel !== undefined 
+                ? String(rawLabel).slice(0, 15) 
+                : `Row ${i + 1}`;
+            
+            const cleanNumber = (val: any) => {
+                if (val === null || val === undefined) return 0;
+                const clean = String(val).replace(/[$,%\s]/g, '');
+                const num = Number(clean);
+                return isNaN(num) ? 0 : num;
+            };
+                
+            return {
+                name,
+                value: cleanNumber(row[metric]),
+                // Include other numeric columns for potential tooltips or stacking
+                ...Object.fromEntries(numericCols.map(c => [c, cleanNumber(row[c])])),
+            };
+        });
+    }, [result.rows, labelCol, metric, numericCols]);
+
+    if (!isMounted) return <div className="h-[260px] w-full animate-pulse bg-white/5 rounded-2xl" />;
     if (!numericCols.length) return <NoChartData />;
+    if (!metric) return <div className="p-10 text-center opacity-50">Initializing visualizer...</div>;
 
     return (
-        <div className="p-4 sm:p-6">
-            {/* ── Controls ──────────────────────────────────────── */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-6 sm:mb-10">
+        <div className="p-3 sm:p-6 w-full overflow-hidden">
+            {/* Controls */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-8">
                 {/* Chart type switcher */}
-                <div className="flex items-center gap-1.5 p-1 bg-black/30 border border-white/5 rounded-xl">
+                <div className="flex items-center gap-1 p-1 bg-black/30 border border-white/5 rounded-xl">
                     {(['bar', 'line', 'pie'] as const).map(type => (
                         <button
                             key={type}
                             onClick={() => setChartType(type)}
-                            className={`px-3 sm:px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${chartType === type
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                                }`}
+                            className={`px-2.5 sm:px-4 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all ${
+                                chartType === type
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                            }`}
                         >
                             {type}
                         </button>
                     ))}
                 </div>
 
-                {/* Metric selector (only when multiple numeric cols) */}
+                {/* Metric selector */}
                 {numericCols.length > 1 && (
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Metric:</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest shrink-0">Metric:</span>
                         <select
                             value={metric}
                             onChange={e => setMetric(e.target.value)}
-                            className="bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-[11px] font-bold text-blue-400 outline-none focus:ring-1 ring-blue-500/40"
+                            className="bg-black/30 border border-white/10 rounded-lg px-2 py-1 text-[11px] font-bold text-blue-400 outline-none focus:ring-1 ring-blue-500/40 max-w-[150px] truncate"
                         >
                             {numericCols.map(col => (
                                 <option key={col} value={col}>{col}</option>
@@ -117,16 +155,17 @@ export function ChartView({ result }: ChartViewProps) {
                 )}
             </div>
 
-            {/* ── Chart canvas ──────────────────────────────────── */}
-            <div className="w-full h-[320px]">
+            {/* Chart canvas — fixed height, ResponsiveContainer handles width */}
+            <div className="w-full min-w-0" style={{ height: '300px' }}>
                 {chartType === 'bar' && (
-                    <ResponsiveContainer>
-                        <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 40, left: 0 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData} margin={{ top: 5, right: 5, bottom: 40, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                             <XAxis dataKey="name" {...AXIS_PROPS} angle={-30} textAnchor="end" interval={0} />
-                            <YAxis {...AXIS_PROPS} />
+                            <YAxis {...AXIS_PROPS} width={50} />
                             <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
-                            <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={32}>
+                            <Legend verticalAlign="top" height={36} formatter={(value) => <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{value}</span>} />
+                            <Bar dataKey="value" name={metric} radius={[4, 4, 0, 0]} barSize={24}>
                                 {chartData.map((_, i) => (
                                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                                 ))}
@@ -136,26 +175,28 @@ export function ChartView({ result }: ChartViewProps) {
                 )}
 
                 {chartType === 'line' && (
-                    <ResponsiveContainer>
-                        <LineChart data={chartData} margin={{ top: 10, right: 10, bottom: 40, left: 0 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={chartData} margin={{ top: 5, right: 5, bottom: 40, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                             <XAxis dataKey="name" {...AXIS_PROPS} angle={-30} textAnchor="end" interval={0} />
-                            <YAxis {...AXIS_PROPS} />
+                            <YAxis {...AXIS_PROPS} width={50} />
                             <Tooltip content={<ChartTooltip />} />
+                            <Legend verticalAlign="top" height={36} formatter={(value) => <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{value}</span>} />
                             <Line
                                 type="monotone"
                                 dataKey="value"
+                                name={metric}
                                 stroke="#3b82f6"
-                                strokeWidth={4}
-                                dot={{ fill: '#3b82f6', r: 4, strokeWidth: 0 }}
-                                activeDot={{ r: 8, strokeWidth: 0 }}
+                                strokeWidth={3}
+                                dot={{ fill: '#3b82f6', r: 3, strokeWidth: 0 }}
+                                activeDot={{ r: 6, strokeWidth: 0 }}
                             />
                         </LineChart>
                     </ResponsiveContainer>
                 )}
 
                 {chartType === 'pie' && (
-                    <ResponsiveContainer>
+                    <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
                                 data={chartData}
@@ -163,12 +204,10 @@ export function ChartView({ result }: ChartViewProps) {
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={110}
-                                innerRadius={60}
-                                paddingAngle={5}
+                                outerRadius={80}
+                                innerRadius={40}
+                                paddingAngle={4}
                                 stroke="none"
-                                label={({ name, percent }) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
-                                labelLine={false}
                             >
                                 {chartData.map((_, i) => (
                                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -181,7 +220,7 @@ export function ChartView({ result }: ChartViewProps) {
                                 verticalAlign="middle"
                                 iconType="circle"
                                 formatter={value => (
-                                    <span className="text-[11px] font-bold text-slate-500 ml-2">{value}</span>
+                                    <span className="text-[10px] font-bold text-slate-500 ml-1">{value}</span>
                                 )}
                             />
                         </PieChart>

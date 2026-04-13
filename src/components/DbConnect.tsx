@@ -2,7 +2,7 @@
 
 import { DatabaseConfig, DatabaseType } from '@/types';
 import { useState, useEffect } from 'react';
-import { Database, Server, Lock, Eye, EyeOff, TestTube, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Database, Server, Lock, Eye, EyeOff, TestTube, CheckCircle, XCircle, Loader2, ChevronDown } from 'lucide-react';
 
 interface DbConnectProps {
     onConnect: (config: DatabaseConfig, schema: unknown) => void;
@@ -96,47 +96,51 @@ export function DbConnect({ onConnect, onDemoMode }: DbConnectProps) {
     };
 
     return (
-        <div className="max-w-[560px] mx-auto">
+        <div className="w-full max-w-xl mx-auto">
             {/* Database Category and Type Selectors */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-2 px-1">
+            <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex-1 min-w-0">
+                    <label className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-2 px-1">
                         Database Engine
                     </label>
-                    <select
-                        value={dbCategory}
-                        onChange={(e) => handleCategoryChange(e.target.value as DbCategory)}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all focus:border-blue-500/50 focus:bg-black/60 focus:ring-4 focus:ring-blue-500/10 cursor-pointer appearance-none"
-                        style={{backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px top 50%', backgroundSize: '10px auto'}}
-                    >
-                        <option value="relational">Relational</option>
-                        <option value="non-relational">Non-Relational</option>
-                    </select>
+                    <div className="relative">
+                        <select
+                            value={dbCategory}
+                            onChange={(e) => handleCategoryChange(e.target.value as DbCategory)}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all focus:border-blue-500/50 focus:bg-black/60 focus:ring-4 focus:ring-blue-500/10 cursor-pointer appearance-none"
+                        >
+                            <option value="relational">Relational</option>
+                            <option value="non-relational">Non-Relational</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    </div>
                 </div>
-                <div>
-                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-2 px-1">
+                <div className="flex-1 min-w-0">
+                    <label className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-2 px-1">
                         Database Type
                     </label>
-                    <select
-                        value={dbType}
-                        onChange={(e) => handleTypeChange(e.target.value as DatabaseType)}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all focus:border-blue-500/50 focus:bg-black/60 focus:ring-4 focus:ring-blue-500/10 cursor-pointer appearance-none"
-                        style={{backgroundImage: "url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394A3B8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')", backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px top 50%', backgroundSize: '10px auto'}}
-                    >
-                        {dbCategory === 'relational' ? (
-                            <>
-                                <option value="mysql">🐬 MySQL</option>
-                                <option value="postgresql">🐘 PostgreSQL</option>
-                            </>
-                        ) : (
-                            <option value="mongodb">🍃 MongoDB</option>
-                        )}
-                    </select>
+                    <div className="relative">
+                        <select
+                            value={dbType}
+                            onChange={(e) => handleTypeChange(e.target.value as DatabaseType)}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 outline-none transition-all focus:border-blue-500/50 focus:bg-black/60 focus:ring-4 focus:ring-blue-500/10 cursor-pointer appearance-none"
+                        >
+                            {dbCategory === 'relational' ? (
+                                <>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                </>
+                            ) : (
+                                <option value="mongodb">MongoDB</option>
+                            )}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    </div>
                 </div>
             </div>
 
             {/* Connection Form */}
-            <div className="glass-card p-6 border border-white/10 relative overflow-hidden">
+            <div className="glass-card p-5 border border-white/10 relative overflow-hidden">
                 {/* Decorative background glow */}
                 <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 

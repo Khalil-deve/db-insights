@@ -1,31 +1,57 @@
 <div align="center">
-  <h1>DB Insights</h1>
-  <p><strong>Transform plain English into actionable database queries instantly.</strong></p>
-  <p>
-    <a href="#features">Features</a> •
-    <a href="#architecture">Architecture</a> •
-    <a href="#quick-start">Quick Start</a> •
-    <a href="#cli">CLI Options</a> •
-    <a href="#contributing">Contributing</a>
-  </p>
+  <img src="./public/logo.png" alt="DB Insights Logo" width="120" />
+  
+  # DB Insights
+  
+  **The Intelligent Bridge Between Natural Language and Your Database.**
+  
+  [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+  [![Lucide Icons](https://img.shields.io/badge/Lucide_Icons-Latest-FF00AD?style=for-the-badge&logo=lucide)](https://lucide.dev/)
+
+  <img src="./public/dashboard.png" alt="DB Insights Dashboard" width="100%" style="border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1);" />
+  
+  <p><strong>Transform plain English into actionable SQL queries instantly.</strong></p>
+  <p>Query, visualize, and analyze your data via <strong>zero-telemetry</strong> infrastructure powered by local AI.</p>
 </div>
 
 ---
 
-## 📖 Overview
+## 📱 Mobile-First Intelligence
 
-**DB Insights** bridges the gap between natural language and database execution. Powered by a local LLM runtime (e.g., Ollama, Qwen), it provides a robust, zero-telemetry infrastructure to query, visualize, and analyze your datasets via plain English prompts.
+Designed for the modern developer, DB Insights features a high-performance, fully responsive interface that brings the power of AI database analysis to your pocket.
 
-With 100% execution taking place on your infrastructure, it ensures airtight data privacy and zero vendor lock-in.
+<div align="center">
+  <img src="./public/phone-view.png" alt="DB Insights Mobile View" width="320" style="border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);" />
+</div>
 
-## ✨ Core Features
+---
 
-- 🧠 **AI-Native SQL Generation**: Employs context-aware prompt parsing to generate precise `SELECT` statements from natural language.
-- 🗄️ **Multi-Engine Support**: Seamlessly connects to **MySQL**, **PostgreSQL**, and **MongoDB** (Coming soon).
-- 🛡️ **Zero-Trust Execution Engine**: Strict pattern-matching blocks destructive operations (`DROP`, `DELETE`, `UPDATE`, `ALTER`). Enforces connection timeouts, max row limits, and payload validation.
-- 📊 **Dynamic Data Visualization**: Render results on-the-fly using Tables, JSON data trees, or Recharts (Bar/Line/Pie).
-- 🧩 **Local-First AI Integration**: Designed for [Ollama](https://ollama.com/), securing sensitive schemas entirely within your perimeter.
-- ⌨️ **Dedicated CLI Client**: Ships with a fully-featured Node CLI module for terminal-native execution and automated pipeline scripting.
+## ✨ Core Capabilities
+
+### 🧠 AI-Native SQL Synthesis
+Say goodbye to complex syntax. Employs context-aware prompt parsing to generate precise `SELECT` statements from natural language. Optimized for **Ollama** and **Qwen2.5-Coder**.
+
+### 🗄️ Universal Multi-Engine Connectivity
+Connect directly to your active environments with support for:
+- 🐬 **MySQL**
+- 🐘 **PostgreSQL**
+- 🍃 **MongoDB** (Pipeline enabled)
+
+### 📊 Advanced Data Storytelling
+Visualize your query results with high-fidelity components:
+- **Interactive Tables**: High-density data views with horizontal scrolling.
+- **Dynamic Charts**: Instant Bar, Line, and Pie visualizations via Recharts.
+- **Tree-View JSON**: Explorable structural data for deep debugging.
+
+### 🛡️ Zero-Trust Security Model
+Safety is non-negotiable.
+- **Read-Only Enforcement**: Strict pattern matching blocks `DROP`, `DELETE`, `UPDATE`, and `ALTER`.
+- **Local-First Data Plane**: 100% of execution and AI inference stays on your infrastructure.
+- **Resource Constraints**: Server-side row caps and statement timeouts prevent engine overload.
+
+---
 
 ## 🏗️ Architecture Stack
 
@@ -37,88 +63,65 @@ DB Insights operates on a decoupled architecture, orchestrating AI generation an
                         │    (Web UI / CLI Module)      │
                         └───────┬─────────────▲─────────┘
                                 │             │
- [Natural Language Query & DB Config]     [Structured Data & AI Synopsis]
+ [Natural Language Query]       │             │       [AI Synopsis]
                                 │             │
                         ┌───────▼─────────────┴─────────┐
                         │       Next.js API Layer       │
                         │                               │
-                        │  1. /api/schema (Fetch)       │
+                        │  1. /api/schema               │
                         │  2. /api/generate (LLM)       │
-                        │  3. /api/validate (AST/Regex) │
-                        │  4. /api/execute (Driver)     │
-                        │  5. /api/insights (Analysis)  │
+                        │  3. /api/execute (Driver)     │
+                        │  4. /api/insights (Analysis)  │
                         └───────┬─────────────┬─────────┘
                                 │             │
-                       ┌────────▼────┐   ┌────▼────────┐
-                       │ Local LLM   │   │  DB Engine  │
-                       │ (Ollama)    │   │ (PG/MySQL/Mongo)│
-                       └─────────────┘   └─────────────┘
+                        ┌───────▼────┐   ┌────▼────────┐
+                        │ Local LLM  │   │  DB Engine  │
+                        │ (Ollama)   │   │ (PG/MySQL)  │
+                        └────────────┘   └─────────────┘
 ```
 
-## 🚀 Quick Start
+---
 
-### 1. Requirements
+## 🚀 Getting Started
 
-* Node.js 18.x or later
-* pnpm, npm, or yarn
-* [Ollama](https://ollama.ai/) running locally (Optional, falls back to manual query input)
+### 1. Prerequisites
+* **Node.js**: 20.x or higher
+* **Local LLM**: [Ollama](https://ollama.ai/) running with `qwen2.5-coder:7b` (recommended)
 
-### 2. Up & Running
+### 2. Installation
 
-Clone the repository and install dependencies:
+1. **Clone the Repo**
+   ```bash
+   git clone https://github.com/your-username/db-insights.git
+   cd db-insights
+   ```
 
-```bash
-git clone https://github.com/your-org/db-insights.git
-cd db-insights
+2. **Setup Dependencies**
+   ```bash
+   npm install
+   ```
 
-# Install package dependencies
-pnpm install
+3. **Fire it up**
+   ```bash
+   npm run dev
+   ```
 
-# Start the development server
-pnpm run dev
-```
+Visit `http://localhost:3000` to start querying.
 
-Navigate to `http://localhost:3500` (or the port defined by `next dev`) to access the web client.
+---
 
-### 3. LLM Configuration (Ollama)
+## 💻 CLI Integration
 
-Ensure the local Ollama daemon is running and pull your preferred coding model. We recommend `qwen2.5-coder:7b` for optimal query synthesis.
-
-```bash
-ollama serve
-ollama pull qwen2.5-coder:7b
-```
-
-## 💻 CLI Client
-
-The repository includes a dedicated CLI application for terminal-based workflows.
-
-**Installation:**
+For power users, DB Insights includes a standalone CLI for terminal-native analysis.
 
 ```bash
 cd cli
-npm install -g .
+npm link
+dbi ask "Who are my most active users?"
 ```
 
-**Usage Examples:**
+---
 
-```bash
-dbi connect                                     # Configure DB credentials interactively
-dbi ask "Who are the top 5 customers?"          # Execute NLQ & print ASCII tables
-dbi ask "Show revenue" --output report.csv      # Export results to CSV
-```
-
-For more detailed CLI mechanics, refer to the [CLI Documentation](./cli/README.md).
-
-## 🔏 Security & Safety Model
-
-Security is critical when granting AI systems database access. DB Insights implements defense-in-depth:
-
-1. **Regex/Keyword Filters:** Rejects DDL and DML operations.
-2. **Transaction Timeouts:** Prevents run-away queries via database-specific connection settings (e.g., `statement_timeout` for Postgres, `MAX_EXECUTION_TIME` for MySQL).
-3. **Hard Caps:** `MAX_ROWS` limit enforced server-side.
-4. **Local Data Plane:** The application state, schemas, and LLM inferences remain entirely local.
-
-## 📄 License & Maintainers
-
-Distributed under the MIT License. See `LICENSE` for more information.
+<div align="center">
+  <p>Built with ❤️ for Data Engineers & Developers</p>
+</div>

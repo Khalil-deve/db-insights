@@ -19,48 +19,48 @@ const TABS: Array<{ id: ViewMode; label: string; icon: React.ReactNode }> = [
 
 export function ResultsHeader({ result, view, onViewChange, onDownloadCSV }: ResultsHeaderProps) {
     return (
-        <div className="flex flex-wrap items-center justify-between p-3 sm:p-4 border-b border-white/5 bg-black/10 gap-3">
+        <div className="flex items-center justify-between p-2.5 sm:p-4 border-b border-white/5 bg-black/10 gap-2 flex-wrap">
             {/* Left: tabs + stats */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-8">
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                 {/* View switcher */}
                 <div className="flex bg-black/30 p-1 rounded-xl border border-white/5 shadow-inner">
                     {TABS.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => onViewChange(tab.id)}
-                            className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest transition-all ${view === tab.id
+                            className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all ${
+                                view === tab.id
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
                                     : 'text-slate-500 hover:text-slate-300'
-                                }`}
+                            }`}
                         >
                             {tab.icon}
-                            {tab.label}
+                            <span className="hidden sm:inline">{tab.label}</span>
                         </button>
                     ))}
                 </div>
 
-                {/* Stats: row count + execution time */}
-                <div className="flex items-center gap-3 sm:gap-5">
-                    <div className="flex items-center gap-2 px-2.5 sm:px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full shadow-lg shadow-emerald-500/5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[11px] text-emerald-400 font-black uppercase tracking-widest">
-                            {result.rowCount.toLocaleString()} RESULTS
+                {/* Stats */}
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                        <span className="text-[10px] sm:text-[11px] text-emerald-400 font-black uppercase tracking-widest whitespace-nowrap">
+                            {result.rowCount.toLocaleString()} rows
                         </span>
                     </div>
-
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                        <span className="text-blue-500/60 font-mono">{result.executionTimeMs}ms</span>
+                    <div className="text-[10px] sm:text-[11px] font-bold text-slate-500 whitespace-nowrap">
+                        <span className="text-blue-500/70 font-mono">{result.executionTimeMs}ms</span>
                     </div>
                 </div>
             </div>
 
-            {/* Right: CSV export */}
+            {/* Right: export */}
             <button
                 onClick={onDownloadCSV}
-                className="flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-bold text-[11px] uppercase tracking-widest transition-all duration-200 hover:bg-white/10 hover:border-white/20 active:scale-[0.98] shadow-lg"
+                className="flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 font-bold text-[10px] sm:text-[11px] uppercase tracking-widest transition-all hover:bg-white/10 hover:border-white/20 active:scale-[0.98] whitespace-nowrap"
             >
-                <Download size={13} />
-                <span className="hidden xs:inline">EXPORT</span> CSV
+                <Download size={12} />
+                <span>CSV</span>
             </button>
         </div>
     );

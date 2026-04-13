@@ -41,8 +41,9 @@ export function ResultsViewer({ result }: ResultsViewerProps) {
     };
 
     return (
-        <div className="glass-card animate-slide-up shadow-2xl ring-1 ring-white/5">
-            {/* ── Tab bar / stats / export ── */}
+        /* The card itself must NOT overflow — clip it */
+        <div className="glass-card animate-slide-up shadow-2xl ring-1 ring-white/5 overflow-hidden w-full">
+            {/* Tab bar — always responsive, never scrolls */}
             <ResultsHeader
                 result={result}
                 view={view}
@@ -50,8 +51,8 @@ export function ResultsViewer({ result }: ResultsViewerProps) {
                 onDownloadCSV={downloadCSV}
             />
 
-            {/* ── Active view pane ── */}
-            <div className="bg-[#0f1628]/30">
+            {/* View pane — inner scroll handled per-view */}
+            <div className="w-full min-h-[400px] overflow-hidden bg-[#0f1628]/30">
                 {view === 'table' && <TableView result={result} />}
                 {view === 'chart' && <ChartView result={result} />}
                 {view === 'json' && <JsonView result={result} />}

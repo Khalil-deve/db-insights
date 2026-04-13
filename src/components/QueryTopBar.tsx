@@ -1,7 +1,7 @@
 'use client';
 
 import { SchemaInfo } from '@/types';
-import { LayoutDashboard, HelpCircle, X, PanelLeft } from 'lucide-react';
+import { LayoutDashboard, HelpCircle, X, PanelLeft, Lightbulb, Gamepad2 } from 'lucide-react';
 
 interface QueryTopBarProps {
     schema: SchemaInfo | null;
@@ -10,6 +10,7 @@ interface QueryTopBarProps {
     showHelp: boolean;
     onToggleSidebar: () => void;
     onToggleHelp: () => void;
+    onBack: () => void;
 }
 
 const HELP_STEPS = [
@@ -21,7 +22,7 @@ const HELP_STEPS = [
 
 export function QueryTopBar({
     schema, isDemo, sidebarOpen, showHelp,
-    onToggleSidebar, onToggleHelp,
+    onToggleSidebar, onToggleHelp, onBack,
 }: QueryTopBarProps) {
     return (
         <>
@@ -39,31 +40,41 @@ export function QueryTopBar({
 
                 {/* DB info */}
                 <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-medium truncate">
+                    <div className="text-[10px] sm:text-[11px] font-medium truncate">
                         {isDemo ? (
-                            <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                                🎮 Demo — E-Commerce Database
+                            <span className="inline-flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                <Gamepad2 size={11} />
+                                Demo Database
                             </span>
                         ) : (
                             <span className="text-slate-400">
                                 <span className="font-bold text-slate-300">{schema?.databaseType?.toUpperCase()}</span>
-                                <span className="mx-1.5 opacity-30">·</span>
-                                {schema?.databaseName}
-                                <span className="mx-1.5 opacity-30">·</span>
-                                <span className="font-bold text-slate-300">{schema?.tables.length}</span> tables
+                                <span className="mx-1 opacity-20">/</span>
+                                <span className="truncate">{schema?.databaseName}</span>
                             </span>
                         )}
                     </div>
                 </div>
 
                 {/* Help button */}
-                <button
-                    onClick={onToggleHelp}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-xs font-bold transition-all hover:bg-white/10 hover:text-slate-200 hover:border-white/20 active:scale-95 group"
-                >
-                    <HelpCircle size={14} className="group-hover:text-amber-400 transition-colors" />
-                    <span className="hidden sm:inline">How to use</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onToggleHelp}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-xs font-bold transition-all hover:bg-white/10 hover:text-slate-200 hover:border-white/20 active:scale-95 group"
+                    >
+                        <HelpCircle size={14} className="group-hover:text-amber-400 transition-colors" />
+                        <span className="hidden sm:inline">How to use</span>
+                    </button>
+
+                    <button
+                        onClick={onBack}
+                        title="Back to connect screen"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold transition-all hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 active:scale-95 group"
+                    >
+                        <X size={14} className="group-hover:scale-110 transition-transform" />
+                        <span className="hidden sm:inline">Exit</span>
+                    </button>
+                </div>
             </header>
 
             {/* Mobile FAB — opens bottom drawer on small screens */}
@@ -88,8 +99,8 @@ export function QueryTopBar({
                         className="glass-card max-w-[480px] w-full p-8 relative overflow-hidden ring-1 ring-white/20 shadow-2xl"
                         onClick={e => e.stopPropagation()}
                     >
-                        {/* Decorative background orb */}
-                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
+                        {/* Decorative background orb — added pointer-events-none so it doesn't block the close button */}
+                        <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
                         {/* Header */}
                         <div className="flex items-center justify-between mb-8">
@@ -97,8 +108,9 @@ export function QueryTopBar({
                                 <span className="text-blue-500">How to Use</span> DB Insights
                             </h2>
                             <button
+                                type="button"
                                 onClick={onToggleHelp}
-                                className="text-slate-500 hover:text-white transition-colors p-1"
+                                className="text-slate-500 hover:text-white transition-colors p-1 relative z-10"
                             >
                                 <X size={20} />
                             </button>
@@ -125,7 +137,9 @@ export function QueryTopBar({
 
                         {/* Tip */}
                         <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
-                            <span className="text-lg shrink-0">💡</span>
+                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
+                                <Lightbulb size={16} className="text-amber-500" />
+                            </div>
                             <p className="text-[12px] text-amber-500/90 leading-relaxed font-medium">
                                 <strong className="text-amber-500">Tip:</strong> Try Demo Mode for instant access — no database credentials required to get started!
                             </p>

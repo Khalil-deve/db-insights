@@ -16,23 +16,22 @@ export function TableView({ result }: TableViewProps) {
     const pageRows = result.rows.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     return (
-        <div className="flex flex-col">
-            {/* Horizontal scroll wrapper — explicit inline style overrides any parent overflow:hidden */}
+        <div className="flex flex-col w-full">
+            {/* ── Horizontal scroll is ONLY on this wrapper ── */}
             <div
-                className="scrollable-x"
+                className="w-full"
                 style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}
             >
-                <table className="results-table min-w-max text-left border-collapse">
+                <table className="results-table text-left w-full" style={{ minWidth: 'max-content' }}>
                     <thead>
                         <tr className="bg-white/5">
-                            {/* Sticky row-number column */}
-                            <th className="w-12 text-center text-slate-500 font-bold p-3 text-[11px] uppercase tracking-wider sticky left-0 bg-[#0a0e1a] z-10">
+                            <th className="text-center text-slate-500 font-bold px-3 py-2.5 text-[11px] uppercase tracking-wider sticky left-0 bg-[#0f1628] z-10 border-r border-white/5 w-10">
                                 #
                             </th>
                             {result.columns.map(col => (
                                 <th
                                     key={col}
-                                    className="p-3 text-slate-300 font-bold text-[11px] uppercase tracking-wider border-l border-white/5 whitespace-nowrap"
+                                    className="px-3 py-2.5 text-slate-300 font-bold text-[11px] uppercase tracking-wider border-l border-white/5 whitespace-nowrap"
                                 >
                                     {col}
                                 </th>
@@ -42,26 +41,26 @@ export function TableView({ result }: TableViewProps) {
 
                     <tbody className="divide-y divide-white/5">
                         {pageRows.map((row, i) => (
-                            <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                                <td className="text-center text-slate-500 text-[11px] p-2.5 font-medium sticky left-0 bg-[#0a0e1a]/95 z-10">
+                            <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                                <td className="text-center text-slate-600 text-[11px] px-3 py-2 font-medium sticky left-0 bg-[#0f1628]/98 z-10 border-r border-white/5">
                                     {page * PAGE_SIZE + i + 1}
                                 </td>
                                 {result.columns.map(col => (
                                     <td
                                         key={col}
-                                        className="p-2.5 text-[13px] border-l border-white/5 text-slate-300 font-medium whitespace-nowrap"
+                                        className="px-3 py-2 text-[12px] sm:text-[13px] border-l border-white/5 text-slate-300 font-medium"
                                     >
                                         {row[col] === null || row[col] === undefined ? (
                                             <span className="text-slate-600 italic text-[11px]">NULL</span>
                                         ) : typeof row[col] === 'number' ? (
-                                            <span className="text-blue-400 font-semibold font-mono">
+                                            <span className="text-blue-400 font-semibold font-mono whitespace-nowrap">
                                                 {Number.isInteger(row[col])
                                                     ? (row[col] as number).toLocaleString()
                                                     : (row[col] as number).toFixed(2)}
                                             </span>
                                         ) : (
                                             <span
-                                                className="block max-w-[220px] truncate"
+                                                className="block whitespace-nowrap max-w-[200px] sm:max-w-[300px] truncate"
                                                 title={String(row[col])}
                                             >
                                                 {String(row[col])}
@@ -75,16 +74,15 @@ export function TableView({ result }: TableViewProps) {
                 </table>
             </div>
 
-            {/* Pagination */}
+            {/* ── Pagination — always full width, never scrolls ── */}
             {totalPages > 1 && (
-                <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-t border-white/5 bg-black/20">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                        Showing {page * PAGE_SIZE + 1}–
-                        {Math.min((page + 1) * PAGE_SIZE, result.rows.length)} of{' '}
-                        {result.rows.length}
+                <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-t border-white/5 bg-black/20 flex-shrink-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                        {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, result.rows.length)}{' '}
+                        <span className="opacity-50">of</span> {result.rows.length}
                     </span>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <button
                             className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-bold text-slate-400 hover:bg-white/10 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                             onClick={() => setPage(p => Math.max(0, p - 1))}

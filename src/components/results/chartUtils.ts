@@ -11,10 +11,23 @@ export const CHART_COLORS = [
 ];
 
 export function detectNumericColumns(result: QueryResult): string[] {
-    if (!result.rows.length) return [];
+    if (!result.rows.length || !result.columns.length) return [];
+    
     return result.columns.filter(col => {
-        const vals = result.rows.slice(0, 10).map(r => r[col]);
-        return vals.every(v => v !== null && v !== undefined && !isNaN(Number(v)));
+        const vals = result.rows.slice(0, 100).map(r => r[col]);
+        const validNumbers = vals.filter(v => {
+            if (v === null || v === undefined || v === '') return false;
+            if (typeof v === 'object') return false;
+            // Clean up common numeric strings (strip $, %, commas, and letters like units)
+            const clean = String(v).replace(/[$,%\sA-Za-z]/g, '');
+            return !isNaN(Number(clean)) && clean !== '';
+        });
+        
+        const nonNullCount = vals.filter(v => v !== null && v !== undefined).length;
+        if (nonNullCount === 0) return false;
+        
+        // At least 30% of non-null values should be numeric to qualify
+        return validNumbers.length > 0 && validNumbers.length >= nonNullCount * 0.3;
     });
 }
 

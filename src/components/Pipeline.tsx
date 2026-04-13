@@ -1,13 +1,21 @@
 'use client';
 
 import { PipelineStep as PipelineStepType, PipelineStepStatus } from '@/types';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Database, Brain, Shield, Zap, Sparkles } from 'lucide-react';
 
 interface PipelineProps {
     steps: PipelineStepType[];
 }
 
-const statusIcon = (status: PipelineStepStatus, icon: string) => {
+const ICON_MAP: Record<string, React.ReactNode> = {
+    'db': <Database size={16} />,
+    'brain': <Brain size={16} />,
+    'shield': <Shield size={16} />,
+    'zap': <Zap size={16} />,
+    'sparkles': <Sparkles size={16} />,
+};
+
+const statusIcon = (status: PipelineStepStatus, iconKey: string) => {
     switch (status) {
         case 'done':
             return <CheckCircle size={16} className="text-emerald-400" />;
@@ -16,7 +24,7 @@ const statusIcon = (status: PipelineStepStatus, icon: string) => {
         case 'active':
             return <Loader2 size={16} className="text-blue-400 animate-spin" />;
         default:
-            return <span className="text-base">{icon}</span>;
+            return <span className="text-slate-500">{ICON_MAP[iconKey] || iconKey}</span>;
     }
 };
 

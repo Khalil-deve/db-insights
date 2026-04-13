@@ -5,19 +5,20 @@ import { QueryResult, SchemaInfo } from '@/types';
 // Supports: Groq, OpenRouter, Gemini
 // Credentials are read from .env.local automatically.
 
-type Provider = 'groq' | 'gemini' | 'openrouter';
+type Provider = 'groq' | 'gemini' | 'openrouter' | 'ollama';
 
 function resolveProvider(p?: string): Provider {
     return (p || process.env.LLM_PROVIDER || 'groq') as Provider;
 }
 function resolveApiKey(provider: Provider, clientKey?: string): string {
     if (clientKey) return clientKey;
-    const map: Record<Provider, string | undefined> = {
+    if (provider === 'ollama') return 'n/a';
+    const map: Record<Exclude<Provider, 'ollama'>, string | undefined> = {
         groq: process.env.GROQ_API_KEY,
         gemini: process.env.GEMINI_API_KEY,
         openrouter: process.env.OPENROUTER_API_KEY,
     };
-    return map[provider] || '';
+    return map[provider as Exclude<Provider, 'ollama'>] || '';
 }
 function resolveModel(provider: Provider, clientModel?: string): string {
     if (clientModel) return clientModel;
@@ -25,6 +26,7 @@ function resolveModel(provider: Provider, clientModel?: string): string {
         groq: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
         gemini: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
         openrouter: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free',
+        ollama: process.env.OLLAMA_MODEL || 'llama3',
     };
     return map[provider];
 }
@@ -43,7 +45,6 @@ ${resultSummary}
 Provide a concise analysis as JSON (no markdown, no code fences, raw JSON only):
 {"summary":"2-3 sentence overview of findings","keyFindings":["finding 1","finding 2","finding 3"],"recommendation":"Optional actionable recommendation or null"}`;
 }
-
 
 async function callOpenAICompatible(prompt: string, apiKey: string, model: string, baseUrl: string): Promise<string> {
     const res = await fetch(`${baseUrl}/chat/completions`, {
@@ -80,6 +81,45 @@ async function callGemini(prompt: string, apiKey: string, model: string): Promis
     return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
+async function callOllama(prompt: string, model: string): Promise<string> {
+    const baseUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
+    const res = await fetch(`${baseUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model,
+            prompt,
+            stream: false,
+            options: { temperature: 0.3 },
+        }),
+        signal: AbortSignal.timeout(60000),
+    });
+    if (!res.ok) throw new Error(`Ollama error: ${res.status}`);
+    const data = await res.json();
+    return data.response || '';
+}
+
+async function tryProvider(provider: Provider, prompt: string, model?: string, apiKey?: string): Promise<string> {
+    const resolvedKey = resolveApiKey(provider, apiKey);
+    const resolvedModel = resolveModel(provider, model);
+
+    switch (provider) {
+        case 'groq':
+            if (!resolvedKey) throw new Error('Groq key missing');
+            return callOpenAICompatible(prompt, resolvedKey, resolvedModel, 'https://api.groq.com/openai/v1');
+        case 'openrouter':
+            if (!resolvedKey) throw new Error('OpenRouter key missing');
+            return callOpenAICompatible(prompt, resolvedKey, resolvedModel, 'https://openrouter.ai/api/v1');
+        case 'gemini':
+            if (!resolvedKey) throw new Error('Gemini key missing');
+            return callGemini(prompt, resolvedKey, resolvedModel);
+        case 'ollama':
+            return callOllama(prompt, resolvedModel);
+        default:
+            throw new Error(`Unknown provider: ${provider}`);
+    }
+}
+
 function generateBasicInsight(question: string, result: QueryResult) {
     const { rowCount, executionTimeMs, columns, rows } = result;
     const findings: string[] = [
@@ -114,41 +154,30 @@ function generateBasicInsight(question: string, result: QueryResult) {
 }
 
 export async function POST(req: NextRequest) {
-    let bodyCache: { question?: string; result?: QueryResult; schema?: SchemaInfo; ollamaUrl?: string; model?: string; provider?: string; apiKey?: string } | null = null;
+    let bodyCache: any = null;
 
     try {
-        const body = await req.json() as {
-            question: string;
-            result: QueryResult;
-            schema?: SchemaInfo;
-            ollamaUrl?: string;
-            model?: string;
-            provider?: 'ollama' | 'groq' | 'openai' | 'gemini' | 'openrouter';
-            apiKey?: string;
-        };
+        const body = await req.json();
         bodyCache = body;
 
-        const { question, result, ollamaUrl, model, provider, apiKey } = body;
-
+        const { question, result, model, provider, apiKey } = body;
         if (!result) return NextResponse.json({ error: 'Result data is required' }, { status: 400 });
 
         const prompt = buildInsightPrompt(question, result);
-        const activeProvider = resolveProvider(provider);
-        const resolvedKey = resolveApiKey(activeProvider, apiKey);
-        const resolvedModel = resolveModel(activeProvider, model);
-
         let rawText = '';
 
-        switch (activeProvider) {
-            case 'groq':
-                rawText = await callOpenAICompatible(prompt, resolvedKey, resolvedModel, 'https://api.groq.com/openai/v1');
-                break;
-            case 'openrouter':
-                rawText = await callOpenAICompatible(prompt, resolvedKey, resolvedModel, 'https://openrouter.ai/api/v1');
-                break;
-            case 'gemini':
-                rawText = await callGemini(prompt, resolvedKey, resolvedModel);
-                break;
+        // FALLBACK CHAIN
+        const providers: Provider[] = [provider || resolveProvider(), 'groq', 'gemini', 'ollama'];
+        const uniqueProviders = [...new Set(providers)];
+
+        for (const p of uniqueProviders) {
+            try {
+                rawText = await tryProvider(p, prompt, model, apiKey);
+                if (rawText) break;
+            } catch (err: any) {
+                console.warn(`[Insights] Provider ${p} failed: ${err.message}`);
+                continue;
+            }
         }
 
         // Parse JSON from response
